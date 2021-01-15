@@ -1,0 +1,8 @@
+@REM RoughCast invocation under JDB:
+cd /d C:\Oleg\Work\Java\RoughCast
+jdb  -sourcepath src -classpath classes  RoughCast.MyRoughCast  -scan img\colors.jpg -convert img\colors.jpg colors_out.jpg -quality 0.5
+stop in RoughCast.MyRoughCast.main
+
+@REM command line
+cd /d C:\Oleg\Work\Java\RoughCast
+java -classpath classes RoughCast.MyRoughCast -scan img\colors.jpg -convert img\colors.jpg out\colors_out.jpg -quality 0.5
