@@ -86,249 +86,249 @@ public class MyRoughCast
   /** This class reads in images, keeping the size of the image
    *  and frequency counts of RGB values.
    */
-  private static class Counter implements ImageConsumer
-  {
-    /** slot x holds the number of pixels seen with value x for red */
-    private int[] redCounts;
-    /** slot x holds the number of pixels seen with value x for green */
-    private int[] greenCounts;
-    /** slot x holds the number of pixels seen with value x for blue */
-    private int[] blueCounts;
-    /** The width of the image */
-    private int imageWidth;
-    /** The height of the image */
-    private int imageHeight;
-    /** The status flag returned by the ImageProducer */
-    private int imageStatus = -1;
-    /** ImageProducer to use to get the image */
-    private ImageProducer producer;
-    /** Image to look at */
-    private Image image;
-    /** Set true to provide more info */
-    private boolean verbose;
-    /** release resources */
-    public void dispose()
-    {
-     synchronized(lock)
-     {
-       if (producer != null)
-       {
-         producer = null;
-	 image.flush();
-	 image = null;
-       }
-     }
-    }
-    /** sets verbose flag to get more info printed out */
-    public void setVerbose(boolean x)
-    {
-      synchronized(lock)
-      {
-	verbose = x;
-      }
-    }
-    /** return the status flag from the ImageProducer */
-    public int getStatus()
-    {
-      synchronized(lock)
-      {
-	return imageStatus;
-      }
-    }
-    /** return the width of the image */
-    public int getWidth()
-    {
-      synchronized(lock)
-      {
-	return imageWidth;
-      }
-    }
-    /** return the height of the image */
-    public int getHeight()
-    {
-      synchronized(lock)
-      {
-	return imageHeight;
-      }
-    }
-    /** return a copy of the array of counts of red pixels. Slot x
-     *  holds the number of such pixels with value x.
-     */
-    public int[] getRedCount()
-    {
-      synchronized(lock)
-      {
-	return (int[])redCounts.clone();
-      }
-    }
-    /** return a copy of the array of counts of green pixels. Slot x
-     *  holds the number of such pixels with value x.
-     */
-    public int[] getGreenCount()
-    {
-      synchronized(lock)
-      {
-	return (int[])greenCounts.clone();
-      }
-    }
-    /** return a copy of the array of counts of blue pixels. Slot x
-     *  holds the number of such pixels with value x.
-     */
-    public int[] getBlueCount()
-    {
-      synchronized(lock)
-      {
-	return (int[])blueCounts.clone();
-      }
-    }
-    /**
-     * return the image
-     */
-    public Image getImage()
-    {
-      synchronized(lock)
-      {
-	return image;
-      }
-    }
-    /**
-     * Used for synchronization (don't use this for synchronization
-     * in case the ImageProducer does)
-     */
-    private Object lock = new Object();
-    /**
-     * Set true when imageComplete() has been called, which may
-     * be when the first frame is seen, or when an error is
-     * detected.
-     */
-    private boolean complete = false;
-    /**
-     * Loads in an image and makes frequency counts.
-     */
-    public void countImage(String name) throws InterruptedException
-    {
-      synchronized(lock)
-      {
-	imageWidth = imageHeight = 0;
-	redCounts = new int[256];
-	greenCounts = new int[256];
-	blueCounts = new int[256];
-	Toolkit toolkit = Toolkit.getDefaultToolkit();
-	image = toolkit.createImage(name);
-	producer = image.getSource();
-	producer.startProduction(this);
-	while (!complete)
-	{
-	  lock.wait();
-	}
-      }
-    }
-    /**
-     * Called back by ImageProducer to receive image dimensions
-     */
-    public void setDimensions(int width, int height)
-    {
-      synchronized(lock)
-      {
-	imageWidth = width;
-	imageHeight = height;
-      }
-    }
-    /**
-     * Called back by ImageProducer to receive image properties
-     */
-    public void setProperties(Hashtable ht)
-    {
-      if (verbose)
-      {
-	System.out.println("Properties " + ht);
-      }
-    }
-    /**
-     * Called back by ImageProducer to receive color model
-     */
-    public void setColorModel(ColorModel model)
-    {
-    }
-    /**
-     * Called back by ImageProducer to receive hints.
-     */
-    public void setHints(int hintflags)
-    {
-      if (verbose && 
-        ((hintflags & ImageConsumer.SINGLEPASS) != 0))
+  //~ private static class Counter implements ImageConsumer
+  //~ {
+    //~ /** slot x holds the number of pixels seen with value x for red */
+    //~ private int[] redCounts;
+    //~ /** slot x holds the number of pixels seen with value x for green */
+    //~ private int[] greenCounts;
+    //~ /** slot x holds the number of pixels seen with value x for blue */
+    //~ private int[] blueCounts;
+    //~ /** The width of the image */
+    //~ private int imageWidth;
+    //~ /** The height of the image */
+    //~ private int imageHeight;
+    //~ /** The status flag returned by the ImageProducer */
+    //~ private int imageStatus = -1;
+    //~ /** ImageProducer to use to get the image */
+    //~ private ImageProducer producer;
+    //~ /** Image to look at */
+    //~ private Image image;
+    //~ /** Set true to provide more info */
+    //~ private boolean verbose;
+    //~ /** release resources */
+    //~ public void dispose()
+    //~ {
+     //~ synchronized(lock)
+     //~ {
+       //~ if (producer != null)
+       //~ {
+         //~ producer = null;
+	 //~ image.flush();
+	 //~ image = null;
+       //~ }
+     //~ }
+    //~ }
+    //~ /** sets verbose flag to get more info printed out */
+    //~ public void setVerbose(boolean x)
+    //~ {
+      //~ synchronized(lock)
+      //~ {
+	//~ verbose = x;
+      //~ }
+    //~ }
+    //~ /** return the status flag from the ImageProducer */
+    //~ public int getStatus()
+    //~ {
+      //~ synchronized(lock)
+      //~ {
+	//~ return imageStatus;
+      //~ }
+    //~ }
+    //~ /** return the width of the image */
+    //~ public int getWidth()
+    //~ {
+      //~ synchronized(lock)
+      //~ {
+	//~ return imageWidth;
+      //~ }
+    //~ }
+    //~ /** return the height of the image */
+    //~ public int getHeight()
+    //~ {
+      //~ synchronized(lock)
+      //~ {
+	//~ return imageHeight;
+      //~ }
+    //~ }
+    //~ /** return a copy of the array of counts of red pixels. Slot x
+     //~ *  holds the number of such pixels with value x.
+     //~ */
+    //~ public int[] getRedCount()
+    //~ {
+      //~ synchronized(lock)
+      //~ {
+	//~ return (int[])redCounts.clone();
+      //~ }
+    //~ }
+    //~ /** return a copy of the array of counts of green pixels. Slot x
+     //~ *  holds the number of such pixels with value x.
+     //~ */
+    //~ public int[] getGreenCount()
+    //~ {
+      //~ synchronized(lock)
+      //~ {
+	//~ return (int[])greenCounts.clone();
+      //~ }
+    //~ }
+    //~ /** return a copy of the array of counts of blue pixels. Slot x
+     //~ *  holds the number of such pixels with value x.
+     //~ */
+    //~ public int[] getBlueCount()
+    //~ {
+      //~ synchronized(lock)
+      //~ {
+	//~ return (int[])blueCounts.clone();
+      //~ }
+    //~ }
+    //~ /**
+     //~ * return the image
+     //~ */
+    //~ public Image getImage()
+    //~ {
+      //~ synchronized(lock)
+      //~ {
+	//~ return image;
+      //~ }
+    //~ }
+    //~ /**
+     //~ * Used for synchronization (don't use this for synchronization
+     //~ * in case the ImageProducer does)
+     //~ */
+    //~ private Object lock = new Object();
+    //~ /**
+     //~ * Set true when imageComplete() has been called, which may
+     //~ * be when the first frame is seen, or when an error is
+     //~ * detected.
+     //~ */
+    //~ private boolean complete = false;
+    //~ /**
+     //~ * Loads in an image and makes frequency counts.
+     //~ */
+    //~ public void countImage(String name) throws InterruptedException
+    //~ {
+      //~ synchronized(lock)
+      //~ {
+	//~ imageWidth = imageHeight = 0;
+	//~ redCounts = new int[256];
+	//~ greenCounts = new int[256];
+	//~ blueCounts = new int[256];
+	//~ Toolkit toolkit = Toolkit.getDefaultToolkit();
+	//~ image = toolkit.createImage(name);
+	//~ producer = image.getSource();
+	//~ producer.startProduction(this);
+	//~ while (!complete)
+	//~ {
+	  //~ lock.wait();
+	//~ }
+      //~ }
+    //~ }
+    //~ /**
+     //~ * Called back by ImageProducer to receive image dimensions
+     //~ */
+    //~ public void setDimensions(int width, int height)
+    //~ {
+      //~ synchronized(lock)
+      //~ {
+	//~ imageWidth = width;
+	//~ imageHeight = height;
+      //~ }
+    //~ }
+    //~ /**
+     //~ * Called back by ImageProducer to receive image properties
+     //~ */
+    //~ public void setProperties(Hashtable ht)
+    //~ {
+      //~ if (verbose)
+      //~ {
+	//~ System.out.println("Properties " + ht);
+      //~ }
+    //~ }
+    //~ /**
+     //~ * Called back by ImageProducer to receive color model
+     //~ */
+    //~ public void setColorModel(ColorModel model)
+    //~ {
+    //~ }
+    //~ /**
+     //~ * Called back by ImageProducer to receive hints.
+     //~ */
+    //~ public void setHints(int hintflags)
+    //~ {
+      //~ if (verbose && 
+        //~ ((hintflags & ImageConsumer.SINGLEPASS) != 0))
           
-      {
-	// If here, the ImageProducer is giving us sucessive
-	// views of the same image to build it up in greater
-	// and greater resolution. If JPEG is doing its job
-	// the colours of the lower resolution versions should
-	// be reasonably accurate so this won't be too bad, but
-	// it isn't the best way to estimate the median pixel
-	// values.
-	System.out.println(
-	  "Not single pass image: results will be inaccurate");
-      }
-    }
-    /**
-     * Called back by ImageProducer to recieve pixel values
-     */
-    public void setPixels(int x, int y, int w, int h, ColorModel cm,
-      byte[] pixels, int off, int scansize)
-    {
-      synchronized(lock)
-      {
-	for (int i = 0; i < h; i++)
-	{
-	  for (int j = 0; j < w; j++)
-	  {
-	    int pix = pixels[j + i * scansize + off] & 0xff;
-	    redCounts[cm.getRed(pix)]++;
-	    greenCounts[cm.getGreen(pix)]++;
-	    blueCounts[cm.getBlue(pix)]++;
-	  }
-	}
-      }
-    }
-    /**
-     * Called back by ImageProducer to recieve pixel values
-     */
-    public void setPixels(int x, int y, int w, int h, ColorModel cm,
-      int[] pixels, int off, int scansize)
-    {
-      synchronized(lock)
-      {
-	for (int i = 0; i < h; i++)
-	{
-	  for (int j = 0; j < w; j++)
-	  {
-	    int pix = pixels[j + i * scansize + off];
-	    redCounts[cm.getRed(pix)]++;
-	    greenCounts[cm.getGreen(pix)]++;
-	    blueCounts[cm.getBlue(pix)]++;
-	  }
-	}
-      }
-    }
-    /**
-     * Called back by ImageProducer to receive notification when
-     * the first frame has been seen or on error
-     */
-    public void imageComplete(int x)
-    {
-      if (verbose)
-      {
-	System.out.println("Complete: " + x);
-      }
-      producer.removeConsumer(this);
-      synchronized(lock)
-      {
-	complete = true;
-	imageStatus = x;
-	lock.notifyAll();
-      }
-    }
-  }
+      //~ {
+	//~ // If here, the ImageProducer is giving us sucessive
+	//~ // views of the same image to build it up in greater
+	//~ // and greater resolution. If JPEG is doing its job
+	//~ // the colours of the lower resolution versions should
+	//~ // be reasonably accurate so this won't be too bad, but
+	//~ // it isn't the best way to estimate the median pixel
+	//~ // values.
+	//~ System.out.println(
+	  //~ "Not single pass image: results will be inaccurate");
+      //~ }
+    //~ }
+    //~ /**
+     //~ * Called back by ImageProducer to recieve pixel values
+     //~ */
+    //~ public void setPixels(int x, int y, int w, int h, ColorModel cm,
+      //~ byte[] pixels, int off, int scansize)
+    //~ {
+      //~ synchronized(lock)
+      //~ {
+	//~ for (int i = 0; i < h; i++)
+	//~ {
+	  //~ for (int j = 0; j < w; j++)
+	  //~ {
+	    //~ int pix = pixels[j + i * scansize + off] & 0xff;
+	    //~ redCounts[cm.getRed(pix)]++;
+	    //~ greenCounts[cm.getGreen(pix)]++;
+	    //~ blueCounts[cm.getBlue(pix)]++;
+	  //~ }
+	//~ }
+      //~ }
+    //~ }
+    //~ /**
+     //~ * Called back by ImageProducer to recieve pixel values
+     //~ */
+    //~ public void setPixels(int x, int y, int w, int h, ColorModel cm,
+      //~ int[] pixels, int off, int scansize)
+    //~ {
+      //~ synchronized(lock)
+      //~ {
+	//~ for (int i = 0; i < h; i++)
+	//~ {
+	  //~ for (int j = 0; j < w; j++)
+	  //~ {
+	    //~ int pix = pixels[j + i * scansize + off];
+	    //~ redCounts[cm.getRed(pix)]++;
+	    //~ greenCounts[cm.getGreen(pix)]++;
+	    //~ blueCounts[cm.getBlue(pix)]++;
+	  //~ }
+	//~ }
+      //~ }
+    //~ }
+    //~ /**
+     //~ * Called back by ImageProducer to receive notification when
+     //~ * the first frame has been seen or on error
+     //~ */
+    //~ public void imageComplete(int x)
+    //~ {
+      //~ if (verbose)
+      //~ {
+	//~ System.out.println("Complete: " + x);
+      //~ }
+      //~ producer.removeConsumer(this);
+      //~ synchronized(lock)
+      //~ {
+	//~ complete = true;
+	//~ imageStatus = x;
+	//~ lock.notifyAll();
+      //~ }
+    //~ }
+  //~ }
   /**
    * This class converts the image, writing to a BufferedImage.
    */
@@ -517,43 +517,44 @@ public class MyRoughCast
   /** This reads in an image and returns the median values of RGB<
    *  or null, on error.
    */
-  public static double[] analyse_(String imageName, boolean verbose)
-    throws InterruptedException
-  {
-    Counter cwb = new Counter();
-    cwb.setVerbose(verbose);
-    cwb.countImage(imageName);
-    cwb.dispose();
-    if ((cwb.getWidth() <= 0) ||
-        (cwb.getHeight() <= 0))
-    { // trouble reading in data
-      return null;
-    }
-    int status = cwb.getStatus();
-    int[] redCount = cwb.getRedCount();
-    int[] greenCount = cwb.getGreenCount();
-    int[] blueCount = cwb.getBlueCount();
-    if (verbose)
-    {
-      if ((status & (ImageConsumer.IMAGEABORTED |
-		       ImageConsumer.IMAGEERROR)) != 0)
-      {
-	System.out.println("Trouble loading image " + imageName +
-	  " for analysis");
-	System.out.println("CWB status is " + status);
-      }
-      System.out.println("File is " + cwb.getWidth() + " by " +
-	cwb.getHeight());
-      System.out.println("Red, Green, and Blue counts");
-      for (int i = 0; i < 256; i++)
-      {
-	System.out.println(i + ": " + redCount[i] + ", " +
-	  greenCount[i] + ", " + blueCount[i]);
-      }
-    }
-    return new double[] {getMedian(redCount), getMedian(greenCount),
-      getMedian(blueCount)};
-  }
+  //~ public static double[] analyse_(String imageName, boolean verbose)
+    //~ throws InterruptedException
+  //~ {
+    //~ Counter cwb = new Counter();
+    //~ cwb.setVerbose(verbose);
+    //~ cwb.countImage(imageName);
+    //~ cwb.dispose();
+    //~ if ((cwb.getWidth() <= 0) ||
+        //~ (cwb.getHeight() <= 0))
+    //~ { // trouble reading in data
+      //~ return null;
+    //~ }
+    //~ int status = cwb.getStatus();
+    //~ int[] redCount = cwb.getRedCount();
+    //~ int[] greenCount = cwb.getGreenCount();
+    //~ int[] blueCount = cwb.getBlueCount();
+    //~ if (verbose)
+    //~ {
+      //~ if ((status & (ImageConsumer.IMAGEABORTED |
+		       //~ ImageConsumer.IMAGEERROR)) != 0)
+      //~ {
+	//~ System.out.println("Trouble loading image " + imageName +
+	  //~ " for analysis");
+	//~ System.out.println("CWB status is " + status);
+      //~ }
+      //~ System.out.println("File is " + cwb.getWidth() + " by " +
+	//~ cwb.getHeight());
+      //~ System.out.println("Red, Green, and Blue counts");
+      //~ for (int i = 0; i < 256; i++)
+      //~ {
+	//~ System.out.println(i + ": " + redCount[i] + ", " +
+	  //~ greenCount[i] + ", " + blueCount[i]);
+      //~ }
+    //~ }
+    //~ return new double[] {getMedian(redCount), getMedian(greenCount),
+      //~ getMedian(blueCount)};
+  //~ }
+  
   /** Return the largest pixel value seen */
   private static int getMax(int[] counts)
   {
@@ -567,70 +568,70 @@ public class MyRoughCast
     return 0;
   }
 
-  /**
-   *  Convert a file according to the arguments here. Don't overwrite -
-   *  it's just too easy to slip up and destroy an image with this
-   *  command-line interface otherwise.
-   */
-  public static boolean HIDDEN__convertFile(String inFile, String outFile,
-    double[] median, boolean verbose, double quality, double gamma)
-    throws IOException, InterruptedException
-  {
-    if (verbose)
-    {
-      System.out.println("Will convert " + inFile + " to " +
-	outFile);
-    }
-    if (new File(outFile).exists())
-    {
-      System.err.println("Stopping conversion as output file " +
-        outFile + " exists");
-      return false;
-    }
-    // First time we fetch the image we want to know its size
-    // and the maximum values of each colour to scale the result
-    // of conversion
-    OKRoughCast.Counter cwb = new OKRoughCast.Counter();
-    cwb.setVerbose(verbose);
-    boolean imageAnalysisOK = cwb.countImage(inFile);
-    int width = cwb.getWidth();
-    int height = cwb.getHeight();
-    if (verbose)
-    {
-      if ( !imageAnalysisOK )
-      {
-		System.out.println("Trouble analysing image " + inFile);
-		return false;
-      }
-      System.out.println("File is " + width + " by " + height);
-    }
-    BufferedImage im = cwb.getImage();
-    int[][] counts = new int[3][];
-    counts[0] = cwb.getRedCount();
-    counts[1] = cwb.getGreenCount();
-    counts[2] = cwb.getBlueCount();
-	byte[][] tables = OKRoughCast.Converter.create_lookup_tables(counts, gamma, median);
+  //~ /**
+   //~ *  Convert a file according to the arguments here. Don't overwrite -
+   //~ *  it's just too easy to slip up and destroy an image with this
+   //~ *  command-line interface otherwise.
+   //~ */
+  //~ public static boolean HIDDEN__convertFile(String inFile, String outFile,
+    //~ double[] median, boolean verbose, double quality, double gamma)
+    //~ throws IOException, InterruptedException
+  //~ {
+    //~ if (verbose)
+    //~ {
+      //~ System.out.println("Will convert " + inFile + " to " +
+	//~ outFile);
+    //~ }
+    //~ if (new File(outFile).exists())
+    //~ {
+      //~ System.err.println("Stopping conversion as output file " +
+        //~ outFile + " exists");
+      //~ return false;
+    //~ }
+    //~ // First time we fetch the image we want to know its size
+    //~ // and the maximum values of each colour to scale the result
+    //~ // of conversion
+    //~ OKRoughCast.Counter cwb = new OKRoughCast.Counter();
+    //~ cwb.setVerbose(verbose);
+    //~ boolean imageAnalysisOK = cwb.countImage(inFile);
+    //~ int width = cwb.getWidth();
+    //~ int height = cwb.getHeight();
+    //~ if (verbose)
+    //~ {
+      //~ if ( !imageAnalysisOK )
+      //~ {
+		//~ System.out.println("Trouble analysing image " + inFile);
+		//~ return false;
+      //~ }
+      //~ System.out.println("File is " + width + " by " + height);
+    //~ }
+    //~ BufferedImage im = cwb.getImage();
+    //~ int[][] counts = new int[3][];
+    //~ counts[0] = cwb.getRedCount();
+    //~ counts[1] = cwb.getGreenCount();
+    //~ counts[2] = cwb.getBlueCount();
+	//~ byte[][] tables = OKRoughCast.Converter.create_lookup_tables(counts, gamma, median);
 	
-    // Now we can convert the image
-    OKRoughCast.Converter c = new OKRoughCast.Converter();
-    c.setVerbose(verbose);
-	BufferedImage bi = c.process(im, tables);
-/*//OK_TEMP
-java.awt.image.AffineTransformOp aop = new java.awt.image.AffineTransformOp(new java.awt.geom.AffineTransform(), java.awt.image.AffineTransformOp.TYPE_BILINEAR);
-BufferedImage bi = new BufferedImage(im.getWidth(), im.getHeight(), im.getType());
-ColorModel cm1 = im.getColorModel(), cm2 = bi.getColorModel();
-if ( !cm1.equals(cm2) )
-	System.out.println("Src cm: "+cm1 + " Dst cm: " +cm2);
-bi = aop.filter(im, bi);
-*/
-    if ( bi == null )
-    {
-		if ( verbose )
-			System.out.println("Trouble converting image " + inFile);
-		return  false;
-    }
-	return	OKUtils.ImageFileUtil.saveImageAsJPEG(bi, 1.0f, outFile);
-  }
+    //~ // Now we can convert the image
+    //~ OKRoughCast.Converter c = new OKRoughCast.Converter();
+    //~ c.setVerbose(verbose);
+	//~ BufferedImage bi = c.process(im, tables);
+//~ /*//OK_TEMP
+//~ java.awt.image.AffineTransformOp aop = new java.awt.image.AffineTransformOp(new java.awt.geom.AffineTransform(), java.awt.image.AffineTransformOp.TYPE_BILINEAR);
+//~ BufferedImage bi = new BufferedImage(im.getWidth(), im.getHeight(), im.getType());
+//~ ColorModel cm1 = im.getColorModel(), cm2 = bi.getColorModel();
+//~ if ( !cm1.equals(cm2) )
+	//~ System.out.println("Src cm: "+cm1 + " Dst cm: " +cm2);
+//~ bi = aop.filter(im, bi);
+//~ */
+    //~ if ( bi == null )
+    //~ {
+		//~ if ( verbose )
+			//~ System.out.println("Trouble converting image " + inFile);
+		//~ return  false;
+    //~ }
+	//~ return	OKUtils.ImageFileUtil.saveImageAsJPEG(bi, 1.0f, outFile);
+  //~ }
 
 
   

@@ -1,8 +1,15 @@
 @REM RoughCast invocation under JDB:
 cd /d C:\Oleg\Work\Java\RoughCast
-jdb  -sourcepath src -classpath classes  RoughCast.MyRoughCast  -scan img\colors.jpg -convert img\colors.jpg colors_out.jpg -quality 0.5
+jdb  -sourcepath src -classpath classes  RoughCast.MyRoughCast  -scan img\colors_cyan.jpg -convert img\colors_cyan.jpg colors_out.jpg -quality 0.5
 stop in RoughCast.MyRoughCast.main
+stop at RoughCast.MyRoughCast:784
+run
 
-@REM command line
+@REM ==================== command line ====================
 cd /d C:\Oleg\Work\Java\RoughCast
+@REM Analyze omage colors by measuring whole image area
+java -classpath classes RoughCast.MyRoughCast -scan img\colors_cyan.jpg
+@REM Correct cast by measuring whole same-image area
 java -classpath classes RoughCast.MyRoughCast -scan img\colors.jpg -convert img\colors.jpg out\colors_out.jpg -quality 0.5
+@REM Correct cast by measuring whole other-image area
+java -classpath classes RoughCast.MyRoughCast -scan img\colors.jpg -convert img\colors_cyan.jpg out\colors_out.jpg -quality 0.5
