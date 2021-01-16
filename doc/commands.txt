@@ -13,3 +13,20 @@ java -classpath classes RoughCast.MyRoughCast -scan img\colors_cyan.jpg
 java -classpath classes RoughCast.MyRoughCast -scan img\colors.jpg -convert img\colors.jpg out\colors_out.jpg -quality 0.5
 @REM Correct cast by measuring whole other-image area
 java -classpath classes RoughCast.MyRoughCast -scan img\colors.jpg -convert img\colors_cyan.jpg out\colors_out.jpg -quality 0.5
+
+@REM  java -classpath classes RoughCast.MyRoughCast -scan img\colors_cyan.jpg
+@REM    Medians of img\colors_cyan.jpg: 231.0:248.0:243.0  Inversed: 100.0:93.14516129032258:95.06172839506173
+
+@REM  java -classpath classes RoughCast.MyRoughCast -scan img\colors.jpg
+@REM    Medians of img\colors.jpg:      238.0:240.0:240.0  Inversed: 100.0:99.16666666666667:99.16666666666667
+
+
+### Failed experiments with synthetic median:
+## bin> expr 0.9677 * 231 * 255/238 => 239.50575
+## bin> expr 0.9677 * 248 * 255/240 => 254.98895
+## bin> expr 0.9677 * 243 * 255/240 => 249.84804375000002
+java -classpath classes RoughCast.MyRoughCast -fixFrom 239.5:255:249.8  -convert img\colors_cyan.jpg out\colors_out_max.jpg -quality 0.5
+## bin> expr 1.0 * 231 * 238/255  => 215.6
+## bin> expr 1.0 * 248 * 240/255  => 233.41176470588235
+## bin> expr 1.0 * 243 * 240/255  => 228.7058823529412
+java -classpath classes RoughCast.MyRoughCast -fixFrom 215.6:233.4:228.7  -convert img\colors_cyan.jpg out\colors_min.jpg -quality 0.5

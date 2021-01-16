@@ -636,7 +636,7 @@ public class OKRoughCast
   
   /**
    * Creates lookup tables doing both color balancing and gamma correction.
-   * @param counts 3 per-band arrays of pixel value frequences.
+   * @param counts 3 per-band arrays of pixel value frequences - counts[0]=array-of-red-frequences.
    */
   protected static byte[][] create_lookup_tables(int[][] counts, double gamma,
 													double[] median)
