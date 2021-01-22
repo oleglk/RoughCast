@@ -739,6 +739,7 @@ public class MyRoughCast
   {
     // current median value to convert from
     double[] median = null;
+    boolean scaleEachChannel = false; // scale source-image colors independently
     // Used in parsing arguments
     int sl1 = s.length - 1;
     int sl2 = s.length - 2;
@@ -802,8 +803,8 @@ public class MyRoughCast
       {
         String inFile = s[++i];
         String outFile = s[++i];
-        if (!OKRoughCast.convertFile(inFile, outFile, median, quality,
-                        gamma, verbose))
+        if (!OKRoughCast.convertFile(inFile, outFile, median, scaleEachChannel,
+                    quality, gamma, verbose))
         {
           trouble = true;
           break;
@@ -819,10 +820,10 @@ public class MyRoughCast
           break;
         }
       }
-      else if ((i < s.length()) && "-scaleToTarget".equals(s[i]))
+      else if ((i < s.length) && "-scaleEachChannel".equals(s[i]))
       {
-        // scale source colors 
-        scaleToTarget = true;
+        // scale source-image colors independently to match the target measurings
+        scaleEachChannel = true;
       }
       else if ((i < sl1) && "-gamma".equals(s[i]))
       {
@@ -879,7 +880,7 @@ public class MyRoughCast
     {
 		System.err.println(
 			"Args are [-scan <file>]* [-convert <in> <out>]* " +
-			"[-fixFrom #:#:#] [-gamma #] [-nv] [-quality #] [-v]");
+			"[-fixFrom #:#:#] [-scaleEachChannel] [-gamma #] [-nv] [-quality #] [-v]");
 		System.exit(1);
     }
     System.exit(0);

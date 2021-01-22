@@ -164,14 +164,20 @@ public class OKRoughCast
    *  Convert a file according to the arguments here. Don't overwrite -
    *  it's just too easy to slip up and destroy an image with this
    *  command-line interface otherwise.
+   *  'scaleEachChannel'=true - scale to make source R,G,B independently equal target's
+  = false; // scale source-image colors independently
    */
   public static boolean convertFile(String inFileName, String outFileName,
-    double[] median, double quality, double gamma, boolean verbose)
+    double[] targetMedian, boolean scaleEachChannel,
+    double quality, double gamma, boolean verbose)
     throws IOException, InterruptedException
   {
     if (verbose)
     {
-      System.out.println("Will convert " + inFileName + " to " + outFileName);
+      System.out.println("Will convert " + inFileName + " to " + outFileName +
+        ";  purpose: " +  (scaleEachChannel? "color-match to median "
+                                           : "white-balance from median ") +
+        targetMedian + "; gamma " + (scaleEachChannel? "(ignored)" : gamma));
     }
     if (new File(outFileName).exists())
     {
@@ -187,7 +193,8 @@ public class OKRoughCast
       return false;
     }
 	BufferedImage im = OKUtils.ImageFileUtil.readAsBufferedImage(inpFile);
-	BufferedImage bi = convertImage(im, median, gamma, verbose);
+	BufferedImage bi = convertImage(im, targetMedian, scaleEachChannel,
+                                  gamma, verbose);
     if ( bi == null )
     {
 		if ( verbose )
@@ -202,12 +209,13 @@ public class OKRoughCast
    *  @return the new converted image or null on failure.
    */
   public static BufferedImage convertImage(BufferedImage im,
-		double[] median, double gamma, boolean verbose)
+		double[] targetMedian, boolean scaleEachChannel, double gamma, boolean verbose)
   {
     if ( verbose && (im == null) )
     {	System.out.println("* convertImage(null) !");
 		return	null;
     }
+    
     // First time we fetch the image we want to know its size
     // and the maximum values of each colour to scale the result
     // of conversion
@@ -228,19 +236,39 @@ public class OKRoughCast
     counts[0] = cwb.getRedCount();
     counts[1] = cwb.getGreenCount();
     counts[2] = cwb.getBlueCount();
-	byte[][] tables = Converter.create_lookup_tables(counts, gamma, median);
+    byte[][] tables       = null;   // for per-channel lookup tables
+    double[] sourceMedian = null;   // for source median in direct-color-scale
+    if ( !scaleEachChannel )  // white-balancing
+      tables = Converter.create_lookup_tables__white_balance(
+                                                  counts, gamma, targetMedian);
+    else
+    {                         // matching colors to another image
+      sourceMedian = analyze_image_colors(im, false);
+      tables = Converter.create_lookup_tables__direct_scale(
+                                    counts, sourceMedian, targetMedian);
+    }
 	
     // Now we can convert the image
     Converter c = new Converter();
     c.setVerbose(verbose);
-	BufferedImage bi = c.process(im, tables);
+    BufferedImage bi = c.process(im, tables);
     if ( bi == null )
     {
-		if ( verbose )
-			System.out.println("* convertImage(): Trouble converting image!");
-		return  null;
+      if ( verbose )
+        System.out.println("* convertImage(): Trouble converting image!");
+        return  null;
     }
-	return	bi;
+    if ( scaleEachChannel )
+    {
+      double[] resultMedian = analyze_image_colors(bi, false);
+      System.out.println("Source medians (R G B): " + 
+            sourceMedian[0] + " " + sourceMedian[1] + " " + sourceMedian[2]);
+      System.out.println("Target medians (R G B): " + 
+            targetMedian[0] + " " + targetMedian[1] + " " + targetMedian[2]);
+      System.out.println("Result medians (R G B): " + 
+            resultMedian[0] + " " + resultMedian[1] + " " + resultMedian[2]);
+    }
+    return	bi;
   }
 
 
@@ -331,22 +359,28 @@ public class OKRoughCast
 		}
 		int[] redCount		= cwb.getRedCount();
 		int[] greenCount	= cwb.getGreenCount();
-	    int[] blueCount		= cwb.getBlueCount();
+	  int[] blueCount		= cwb.getBlueCount();
+    
+    double[] medians = new double[] {
+        getMedian(redCount), getMedian(greenCount),	getMedian(blueCount) };
+    
 		if ( verbose )
 		{
 			System.out.println("Image is " + cwb.getWidth() + " by " +
 								cwb.getHeight());
-			System.out.println("Red, Green, and Blue counts");
-			for (int i = 0; i < 256; i++)
-			{
-				System.out.println(i + ": " + redCount[i] + ", " +
-									greenCount[i] + ", " + blueCount[i]);
-			}
+			//~ System.out.println("Red, Green, and Blue counts");
+			//~ for (int i = 0; i < 256; i++)
+			//~ {
+				//~ System.out.println(i + ": " + redCount[i] + ", " +
+									//~ greenCount[i] + ", " + blueCount[i]);
+			//~ }
+      System.out.println("Image medians (R G B): " + 
+            medians[0] + " " + medians[1] + " " + medians[2]);
 		}
-		return new double[] {	getMedian(redCount), getMedian(greenCount),
-								getMedian(blueCount)};
+		return  medians;
 	}
 
+  
 	/** Work out median from frequency counts */
 	protected static double getMedian(int[] counts)
 	{
@@ -634,12 +668,13 @@ public class OKRoughCast
 		return  ourTarget;
     }
   
+    
   /**
    * Creates lookup tables doing both color balancing and gamma correction.
    * @param counts 3 per-band arrays of pixel value frequences - counts[0]=array-of-red-frequences.
    */
-  protected static byte[][] create_lookup_tables(int[][] counts, double gamma,
-													double[] median)
+  protected static byte[][] create_lookup_tables__white_balance(
+                                int[][] counts, double gamma,	double[] median)
   {
     final double ZERO_SUBSTITUTE = 0.5;
     // Want to divide by respective medians, add optional
@@ -690,6 +725,58 @@ public class OKRoughCast
 	return  tables;
   }
 
+  
+  /**
+   * Creates lookup tables doing direct color scaling.
+   * Basically:   vNew = vOld * targetMedian / sourceMedian
+   * @param counts 3 per-band arrays of pixel value frequences - counts[0]=array-of-red-frequences.
+   */
+  protected static byte[][] create_lookup_tables__direct_scale(
+                  int[][] counts, double[] sourceMedian, double[] targetMedian)
+  {
+    final double ZERO_SUBSTITUTE = 0.5;
+    // Want to divide by respective targetMedians, add optional
+    // gamma correction, and then scale
+    // result so that the maximum pixel value produced is 255
+    double max = 0.0;
+    for (int i = 0; i < counts.length; i++)
+    {
+      double sm = sourceMedian[i],  tm = targetMedian[i];
+      if (sm <= 0.0)
+      { // Shouldn't be here, but if we are avoid division by zero
+        sm = ZERO_SUBSTITUTE;
+      }
+      double x = getMax(counts[i]) * tm / sm;
+      // x is what the corrected value would be without scaling to
+      // fit everything into the range 0..255
+      if (x > max)
+      {
+        max = x;
+      }
+    }
+    // Now create lookup tables for conversion
+    byte[][] tables = new byte[3][];
+    for (int i = 0; i < tables.length; i++)
+    {
+      double sm = sourceMedian[i],  tm = targetMedian[i];
+      if (sm <= 0.0)
+      { // Shouldn't be here, but if we are avoid division by zero
+        sm = ZERO_SUBSTITUTE;
+      }
+      byte[] lookup = new byte[256];
+      tables[i] = lookup;
+      for (int j = 0; j < lookup.length; j++)
+      {
+        // Apply scaling to match target color
+        double x = j * tm / sm;
+        // Apply scaling to fit in range 0..255
+        lookup[j] = (byte)Math.round(x * 255.0 / max);
+      }
+    }
+    return  tables;
+  }
+
+  
   /** @return the largest pixel value seen */
   private static int getMax(int[] counts)
   {
