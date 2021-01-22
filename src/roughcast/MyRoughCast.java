@@ -819,6 +819,11 @@ public class MyRoughCast
           break;
         }
       }
+      else if ((i < s.length()) && "-scaleToTarget".equals(s[i]))
+      {
+        // scale source colors 
+        scaleToTarget = true;
+      }
       else if ((i < sl1) && "-gamma".equals(s[i]))
       {
         i++;
