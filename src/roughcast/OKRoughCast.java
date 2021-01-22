@@ -735,25 +735,25 @@ public class OKRoughCast
                   int[][] counts, double[] sourceMedian, double[] targetMedian)
   {
     final double ZERO_SUBSTITUTE = 0.5;
-    // Want to divide by respective targetMedians, add optional
-    // gamma correction, and then scale
-    // result so that the maximum pixel value produced is 255
-    double max = 0.0;
-    for (int i = 0; i < counts.length; i++)
-    {
-      double sm = sourceMedian[i],  tm = targetMedian[i];
-      if (sm <= 0.0)
-      { // Shouldn't be here, but if we are avoid division by zero
-        sm = ZERO_SUBSTITUTE;
-      }
-      double x = getMax(counts[i]) * tm / sm;
-      // x is what the corrected value would be without scaling to
-      // fit everything into the range 0..255
-      if (x > max)
-      {
-        max = x;
-      }
-    }
+    //~ // Want to divide by respective targetMedians, add optional
+    //~ // gamma correction, and then scale
+    //~ // result so that the maximum pixel value produced is 255
+    //~ double max = 0.0;
+    //~ for (int i = 0; i < counts.length; i++)
+    //~ {
+      //~ double sm = sourceMedian[i],  tm = targetMedian[i];
+      //~ if (sm <= 0.0)
+      //~ { // Shouldn't be here, but if we are avoid division by zero
+        //~ sm = ZERO_SUBSTITUTE;
+      //~ }
+      //~ double x = getMax(counts[i]) * tm / sm;
+      //~ // x is what the corrected value would be without scaling to
+      //~ // fit everything into the range 0..255
+      //~ if (x > max)
+      //~ {
+        //~ max = x;
+      //~ }
+    //~ }
     // Now create lookup tables for conversion
     byte[][] tables = new byte[3][];
     for (int i = 0; i < tables.length; i++)
@@ -769,8 +769,10 @@ public class OKRoughCast
       {
         // Apply scaling to match target color
         double x = j * tm / sm;
-        // Apply scaling to fit in range 0..255
-        lookup[j] = (byte)Math.round(x * 255.0 / max);
+        //~ // Apply scaling to fit in range 0..255
+        //~ lookup[j] = (byte)Math.round(x * 255.0 / max);
+        // Apply restriction to the max of 255
+        lookup[j] = (byte)( (x <= 255)? x : 255 );
       }
     }
     return  tables;
