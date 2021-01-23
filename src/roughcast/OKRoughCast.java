@@ -38,6 +38,13 @@ import java.io.OutputStream;
 import java.util.StringTokenizer;
 import java.awt.Toolkit;
 
+// Metrics used for color statistics
+enum MetricsType {
+  MEDIAN,
+  AVERAGE
+}
+
+
 /**
  * This class hosts a little utility to provide a post-camera
  * white balance. It can work out the median values of the red,
@@ -99,22 +106,27 @@ public class OKRoughCast
   private static final int SAMPLE_WIDTH = 4;
   /** height of subimage to scan */
   private static final int SAMPLE_HEIGHT = 4;
+  
+  private static MetricsType _metrics = MetricsType.MEDIAN;
 
   /** Creates a new instance of OKRoughCast */
   public OKRoughCast()
   {
   }
+  
+  public void SetMetricsType(MetricsType m) {    _metrics = m;  }
+  public MetricsType GetMetricsType() {    return  _metrics;  }  
 
   /*************** Main API functions ******************************/
-  /** This reads in an image and returns the median values of RGB<
+  /** This reads in an image and returns the chosen-metrics values of RGB
    *  or null, on error.
    */
   public static double[] analyze_image_colors(String imageName, boolean verbose)
   {
-	  return  Counter.analyse(imageName, verbose);
+	  return  Counter.analyse(_metrics, imageName, verbose);
   }
   
-  /** This reads in an image and returns the median values of RGB
+  /** This reads in an image and returns the chosen-metrics values of RGB
    *  of subimage around {x, y}
    *  or null, on error.
    */
@@ -123,26 +135,27 @@ public class OKRoughCast
 												boolean verbose)
   {
 	  BufferedImage im = Counter.loadImage(imageName);
-	  return  Counter.analyse_subImage(im,
+	  return  Counter.analyse_subImage(_metrics, im,
 										x-SAMPLE_WIDTH/2, y-SAMPLE_HEIGHT/2,
 										SAMPLE_WIDTH, SAMPLE_HEIGHT, verbose);
   }
 
-  /** @return the median values of RGB or null, on error.
+  
+  /** @return the chosen-metrics values of RGB or null, on error.
    */
   public static double[] analyze_image_colors(BufferedImage img, boolean verbose)
   {
-	  return  Counter.analyse(img, verbose);
+	  return  Counter.analyse(_metrics, img, verbose);
   }
   
-  /** @return the median values of RGB of subimage around {x, y}
+  /** @return the chosen-metrics values of RGB of subimage around {x, y}
    *  or null, on error.
    */
   public static double[] analyze_image_colors(BufferedImage img,
 												int x, int y,
 												boolean verbose)
   {
-	  return  Counter.analyse_subImage(img,
+	  return  Counter.analyse_subImage(_metrics, img,
 										x-SAMPLE_WIDTH/2, y-SAMPLE_HEIGHT/2,
 										SAMPLE_WIDTH, SAMPLE_HEIGHT, verbose);
   }
@@ -160,6 +173,7 @@ public class OKRoughCast
 	  return	new double[] {r2, g2, b2};
   }
 
+  
   /**
    *  Convert a file according to the arguments here. Don't overwrite -
    *  it's just too easy to slip up and destroy an image with this
@@ -168,7 +182,7 @@ public class OKRoughCast
   = false; // scale source-image colors independently
    */
   public static boolean convertFile(String inFileName, String outFileName,
-    double[] targetMedian, boolean scaleEachChannel,
+    double[] targetMetrics, boolean scaleEachChannel,
     double quality, double gamma, boolean verbose)
     throws IOException, InterruptedException
   {
@@ -177,7 +191,7 @@ public class OKRoughCast
       System.out.println("Will convert " + inFileName + " to " + outFileName +
         ";  purpose: " +  (scaleEachChannel? "color-match to median "
                                            : "white-balance from median ") +
-        targetMedian + "; gamma " + (scaleEachChannel? "(ignored)" : gamma));
+        targetMetrics + "; gamma " + (scaleEachChannel? "(ignored)" : gamma));
     }
     if (new File(outFileName).exists())
     {
@@ -193,7 +207,7 @@ public class OKRoughCast
       return false;
     }
 	BufferedImage im = OKUtils.ImageFileUtil.readAsBufferedImage(inpFile);
-	BufferedImage bi = convertImage(im, targetMedian, scaleEachChannel,
+	BufferedImage bi = convertImage(im, targetMetrics, scaleEachChannel,
                                   gamma, verbose);
     if ( bi == null )
     {
@@ -209,7 +223,7 @@ public class OKRoughCast
    *  @return the new converted image or null on failure.
    */
   public static BufferedImage convertImage(BufferedImage im,
-		double[] targetMedian, boolean scaleEachChannel, double gamma, boolean verbose)
+		double[] targetMetrics, boolean scaleEachChannel, double gamma, boolean verbose)
   {
     if ( verbose && (im == null) )
     {	System.out.println("* convertImage(null) !");
@@ -237,15 +251,15 @@ public class OKRoughCast
     counts[1] = cwb.getGreenCount();
     counts[2] = cwb.getBlueCount();
     byte[][] tables       = null;   // for per-channel lookup tables
-    double[] sourceMedian = null;   // for source median in direct-color-scale
+    double[] sourceMetrics = null;   // for source median in direct-color-scale
     if ( !scaleEachChannel )  // white-balancing
       tables = Converter.create_lookup_tables__white_balance(
-                                                  counts, gamma, targetMedian);
+                                                  counts, gamma, targetMetrics);
     else
     {                         // matching colors to another image
-      sourceMedian = analyze_image_colors(im, false);
+      sourceMetrics = analyze_image_colors(im, false);
       tables = Converter.create_lookup_tables__direct_scale(
-                                    counts, sourceMedian, targetMedian);
+                                    counts, sourceMetrics, targetMetrics);
     }
 	
     // Now we can convert the image
@@ -260,13 +274,13 @@ public class OKRoughCast
     }
     if ( scaleEachChannel )
     {
-      double[] resultMedian = analyze_image_colors(bi, false);
-      System.out.println("Source medians (R G B): " + 
-            sourceMedian[0] + " " + sourceMedian[1] + " " + sourceMedian[2]);
-      System.out.println("Target medians (R G B): " + 
-            targetMedian[0] + " " + targetMedian[1] + " " + targetMedian[2]);
-      System.out.println("Result medians (R G B): " + 
-            resultMedian[0] + " " + resultMedian[1] + " " + resultMedian[2]);
+      double[] resultMetrics = analyze_image_colors(bi, false);
+      System.out.println("Source metrics (R G B): " + 
+            sourceMetrics[0] + " " + sourceMetrics[1] + " " + sourceMetrics[2]);
+      System.out.println("Target metrics (R G B): " + 
+            targetMetrics[0] + " " + targetMetrics[1] + " " + targetMetrics[2]);
+      System.out.println("Result metrics (R G B): " + 
+            resultMetrics[0] + " " + resultMetrics[1] + " " + resultMetrics[2]);
     }
     return	bi;
   }
@@ -278,7 +292,7 @@ public class OKRoughCast
    */
   public static class Counter
   {
-	private final static int MAX_BLOCK_SIZE = 1024 * 1024;	// =1Mpix
+    private final static int MAX_BLOCK_SIZE = 1024 * 1024;	// =1Mpix
     /** slot x holds the number of pixels seen with value x for red */
     private int[] redCounts;
     /** slot x holds the number of pixels seen with value x for green */
@@ -300,10 +314,11 @@ public class OKRoughCast
 		redCounts = null;		greenCounts = null;		blueCounts	= null;
 	}
 
-	/** Reads in an image and returns the median values of RGB<
+	/** Reads in an image and returns the specified-metrics values of RGB
 	 *  or null, on error.
 	 */
-	protected static double[] analyse(String imageName, boolean verbose)
+	protected static double[] analyse(MetricsType mt, String imageName,
+                                    boolean verbose)
 	{
 		BufferedImage im = loadImage(imageName);
 		if ( im == null )
@@ -311,14 +326,14 @@ public class OKRoughCast
 			System.out.println("Trouble loading image " + imageName);
 			return null;
 		}
-		return	analyse(im, verbose);
+		return	analyse(mt, im, verbose);
 	}
 
 
 
-	/** @return the median values of RGB or null on error.
+	/** @return the specified-metrics values of RGB or null on error.
 	 */
-	protected static double[] analyse_subImage(BufferedImage im,
+	protected static double[] analyse_subImage(MetricsType mt, BufferedImage im,
 								int x, int y, int w, int h, boolean verbose)
 	{
 		BufferedImage subIm = null;
@@ -343,12 +358,13 @@ public class OKRoughCast
 								"out of boundaries!");
 			return null;
 		}
-		return	analyse(subIm, verbose);
+		return	analyse(mt, subIm, verbose);
 	}
 
-	/** @return the median values of RGB or null on error.
+	/** @return the specified-metrics values of RGB or null on error.
 	 */
-	protected static double[] analyse(BufferedImage im, boolean verbose)
+	protected static double[] analyse(MetricsType mt, BufferedImage im,
+                                    boolean verbose)
 	{
 		Counter cwb = new Counter();
 		cwb.setVerbose(verbose);
@@ -361,8 +377,16 @@ public class OKRoughCast
 		int[] greenCount	= cwb.getGreenCount();
 	  int[] blueCount		= cwb.getBlueCount();
     
-    double[] medians = new double[] {
-        getMedian(redCount), getMedian(greenCount),	getMedian(blueCount) };
+    double[] metrics = null;
+    switch (mt) {
+      case MEDIAN:
+        metrics = new double[] {
+            getMedian(redCount), getMedian(greenCount),	getMedian(blueCount) };
+        break;
+      case AVERAGE:
+        //TODO:implement
+        break;
+    }
     
 		if ( verbose )
 		{
@@ -374,10 +398,10 @@ public class OKRoughCast
 				//~ System.out.println(i + ": " + redCount[i] + ", " +
 									//~ greenCount[i] + ", " + blueCount[i]);
 			//~ }
-      System.out.println("Image medians (R G B): " + 
-            medians[0] + " " + medians[1] + " " + medians[2]);
+      System.out.println("Image metrics (R G B): " + 
+            metrics[0] + " " + metrics[1] + " " + metrics[2]);
 		}
-		return  medians;
+		return  metrics;
 	}
 
   
@@ -728,20 +752,20 @@ public class OKRoughCast
   
   /**
    * Creates lookup tables doing direct color scaling.
-   * Basically:   vNew = vOld * targetMedian / sourceMedian
+   * Basically:   vNew = vOld * targetMetrics / sourceMetrics
    * @param counts 3 per-band arrays of pixel value frequences - counts[0]=array-of-red-frequences.
    */
   protected static byte[][] create_lookup_tables__direct_scale(
-                  int[][] counts, double[] sourceMedian, double[] targetMedian)
+                  int[][] counts, double[] sourceMetrics, double[] targetMetrics)
   {
     final double ZERO_SUBSTITUTE = 0.5;
-    //~ // Want to divide by respective targetMedians, add optional
+    //~ // Want to divide by respective targetMetricss, add optional
     //~ // gamma correction, and then scale
     //~ // result so that the maximum pixel value produced is 255
     //~ double max = 0.0;
     //~ for (int i = 0; i < counts.length; i++)
     //~ {
-      //~ double sm = sourceMedian[i],  tm = targetMedian[i];
+      //~ double sm = sourceMetrics[i],  tm = targetMetrics[i];
       //~ if (sm <= 0.0)
       //~ { // Shouldn't be here, but if we are avoid division by zero
         //~ sm = ZERO_SUBSTITUTE;
@@ -758,7 +782,7 @@ public class OKRoughCast
     byte[][] tables = new byte[3][];
     for (int i = 0; i < tables.length; i++)
     {
-      double sm = sourceMedian[i],  tm = targetMedian[i];
+      double sm = sourceMetrics[i],  tm = targetMetrics[i];
       if (sm <= 0.0)
       { // Shouldn't be here, but if we are avoid division by zero
         sm = ZERO_SUBSTITUTE;
