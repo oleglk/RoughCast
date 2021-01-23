@@ -114,8 +114,8 @@ public class OKRoughCast
   {
   }
   
-  public void SetMetricsType(MetricsType m) {    _metrics = m;  }
-  public MetricsType GetMetricsType() {    return  _metrics;  }  
+  public static void SetMetricsType(MetricsType m) {    _metrics = m;  }
+  public static MetricsType GetMetricsType() {    return  _metrics;  }  
 
   /*************** Main API functions ******************************/
   /** This reads in an image and returns the chosen-metrics values of RGB
@@ -384,7 +384,8 @@ public class OKRoughCast
             getMedian(redCount), getMedian(greenCount),	getMedian(blueCount) };
         break;
       case AVERAGE:
-        //TODO:implement
+        metrics = new double[] {
+            getAverage(redCount), getAverage(greenCount),	getAverage(blueCount) };
         break;
     }
     
@@ -405,7 +406,11 @@ public class OKRoughCast
 	}
 
   
-	/** Work out median from frequency counts */
+	/**
+    *  Work out median from frequency counts
+    *   @param counts array of per-pixel-value frequences for one channel
+    *   @return the value of median
+    */
 	protected static double getMedian(int[] counts)
 	{
 	    // First work out the total number of samples
@@ -442,6 +447,28 @@ public class OKRoughCast
 		}
 		return (firstMedian + lastMedian) * 0.5;
 	}
+
+  
+	/**
+    *  Work out average from frequency counts
+    *   @param counts array of per-pixel-value frequences for one channel
+    *   @return the value of average
+    */
+	protected static double getAverage(int[] counts)
+	{
+	  // average == SUM( val * counts[val] / total_count
+    int total_count = 0;  // ultimately the number of pixels in the sample
+    int i;
+		for ( i = counts.length -1;  i >= 0;  i-- )
+			total_count += counts[i];
+    
+		double average = 0.0,  sum = 0.0;
+    for ( i = counts.length -1;  i >= 0;  i-- )
+      sum += 1.0 * i * counts[i];
+    average = sum / total_count;
+    return  average;
+	}
+  
 
     /** sets verbose flag to get more info printed out */
     public void setVerbose(boolean x)

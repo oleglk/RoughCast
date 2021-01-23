@@ -287,9 +287,9 @@ public class MyRoughCast
     // current metrics values to convert from
     double[] metrics = null;
     boolean scaleEachChannel = false; // scale source-image colors independently
+    OKRoughCast.SetMetricsType(MetricsType.MEDIAN); // the default
     // Used in parsing arguments
-    int sl1 = s.length - 1;
-    int sl2 = s.length - 2;
+    int sl1 = s.length-1,  sl2 = s.length-2,  sl3 = s.length-3;
     // set on error
     boolean trouble = false;
     // default quality is JPEG normal
@@ -346,8 +346,15 @@ public class MyRoughCast
         System.out.print(": " + metricsToString(metrics));
         System.out.println("  Inversed: " + metricsToString(invMetrics));
       }
-      else if ((i < sl2) && (metrics != null) && "-convert".equals(s[i]))
+      else if ((i <= sl3) && (metrics != null) && "-convert".equals(s[i]))
       {
+        // "-convert" must be the last argument - it triggers the processing
+        if (i < sl3)
+        {
+          System.err.println("'-convert' must be the last argument");
+          trouble = true;
+          break;
+        }
         String inFile = s[++i];
         String outFile = s[++i];
         if (!OKRoughCast.convertFile(inFile, outFile, metrics, scaleEachChannel,
@@ -371,6 +378,7 @@ public class MyRoughCast
       {
         // scale source-image colors independently to match the target measurings
         scaleEachChannel = true;
+        OKRoughCast.SetMetricsType(MetricsType.AVERAGE); 
       }
       else if ((i < sl1) && "-gamma".equals(s[i]))
       {

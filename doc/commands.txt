@@ -10,12 +10,12 @@ cd /d C:\Oleg\Work\Java\RoughCast
 @REM Analyze image colors by measuring whole image area
 java -classpath classes RoughCast.MyRoughCast -scan img\colors_cyan.jpg
 @REM Correct cast by measuring whole same-image area
-java -classpath classes RoughCast.MyRoughCast -scan img\colors.jpg -convert img\colors.jpg out\colors_out.jpg -quality 0.5
+java -classpath classes RoughCast.MyRoughCast -scan img\colors.jpg -quality 0.5 -convert img\colors.jpg out\colors_out.jpg
 @REM Correct cast by measuring whole other-image area
-java -classpath classes RoughCast.MyRoughCast -scan img\colors.jpg -convert img\colors_cyan.jpg out\colors_out.jpg -quality 0.5
+java -classpath classes RoughCast.MyRoughCast -scan img\colors.jpg -quality 0.5 -convert img\colors_cyan.jpg out\colors_out.jpg
 
 @REM Adjust colors to match other-image' measuring whole images' areas
-java -classpath classes RoughCast.MyRoughCast -v -scaleEachChannel  -scan img\colors.jpg -convert img\colors_cyan.jpg out\colors_out.jpg -quality 0.5
+java -classpath classes RoughCast.MyRoughCast -v -scaleEachChannel  -scan img\colors.jpg -quality 0.5 -convert img\colors_cyan.jpg out\colors_out.jpg
 
 @REM =================================================================================
 @REM  java -classpath classes RoughCast.MyRoughCast -scan img\colors_cyan.jpg
