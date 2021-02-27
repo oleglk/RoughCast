@@ -16,6 +16,8 @@ java -classpath classes RoughCast.MyRoughCast -scan img\colors.jpg -quality 0.5 
 
 @REM Adjust colors to match other-image' measuring whole images' areas
 java -classpath classes RoughCast.MyRoughCast -v -scaleEachChannel  -scan img\colors.jpg -quality 0.5 -convert img\colors_cyan.jpg out\colors_out.jpg
+java -classpath classes RoughCast.MyRoughCast -v -scaleEachChannel  -scan img\ChaChaCha\COLORS01_s_L.jpg   -quality 0.5 -convert img\ChaChaCha\COLORS01_s_R.jpg  out\COLORS01_s_out.JPG
+
 
 @REM =================================================================================
 @REM  java -classpath classes RoughCast.MyRoughCast -scan img\colors_cyan.jpg
